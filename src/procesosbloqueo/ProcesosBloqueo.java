@@ -44,6 +44,7 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
     JTextField tfNombre = new JTextField("a");
     
     JTextField[][] tabla = new JTextField[40][8];
+    JLabel[][] diagrama = new JLabel[41][101];
     
     ListaCircular cola = new ListaCircular();
     
@@ -52,6 +53,7 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
     
     int filas = 0, rafagaTemporal;
     int tiempoGlobal = 0;
+    int coorX = 0, coorY = 0;
     
     Thread procesos;
     
@@ -207,9 +209,57 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
         scrollPane.repaint();
         scrollPane1.setViewportView(scrollPane);
             
+    }
+        
+    public void dibujarDiagrama(String nombre, int coorX, int coorY){
+        
+        scrollPane2.removeAll();
+        
+        for(int i = 0; i<101; i++){
+            
+            diagrama[0][i] = new JLabel(Integer.toString(i));
+            diagrama[0][i].setBounds(20 + (i*20), 20, 20, 20);
+
+            scrollPane2.add(diagrama[0][i]);
+            
         }
         
+        diagrama[coorY][0] = new JLabel("  " + nombre);
+        diagrama[coorY][0].setBounds(0, 20 + (coorY*20), 20, 20);
         
+        scrollPane2.add(diagrama[coorY][0]);
+        
+        JLabel img = new JLabel();
+        
+        ImageIcon imgIcon = new ImageIcon(getClass().getResource("barra.jpg"));
+
+        Image imgEscalada = imgIcon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
+        Icon iconoEscalado = new ImageIcon(imgEscalada);
+        
+        for(int i = 1; i < coorY+1; i++){
+            
+            for(int j = 0; j < coorX+1; j++){
+                
+                if(diagrama[i][j] != null){
+                
+                    scrollPane2.add(diagrama[i][j]);
+                    
+                }
+                
+            }
+            
+        }
+        
+        diagrama[coorY][coorX+1] = new JLabel();
+        diagrama[coorY][coorX+1].setBounds(20 + (coorX*20), 20 + (coorY*20), 20, 20);
+        diagrama[coorY][coorX+1].setIcon(iconoEscalado);
+        
+        scrollPane2.add(diagrama[coorY][coorX+1]);
+        
+        scrollPane2.repaint();
+        scrollPane3.setViewportView(scrollPane2);
+            
+    }        
     
     public int calcularRafaga(){
         
@@ -300,6 +350,8 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
                 
                 cola.eliminar(cola.getCabeza());
                 
+                coorY++;
+                
                 while(nodoEjecutado.getRafaga() > 0){
 
                     System.out.println("Pro: " + nodoEjecutado.getLlave() + " - Raf: " + nodoEjecutado.getRafaga());
@@ -309,8 +361,11 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
                     label3.setText("Proceso en ejecucion: " + nodoEjecutado.getLlave());
                     label4.setText("Tiempo: " + String.valueOf(tiempoGlobal) + " Segundos.");
                     
+                    dibujarDiagrama(nodoEjecutado.getLlave(), coorX, coorY);
+                    
                     tiempoGlobal++;
-                            
+                    coorX++;
+                    
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException ex) {
@@ -328,15 +383,12 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
                 }
                 
             }
-            
-            
 
-        }catch(Exception e){
+        } catch(Exception e){
         
             System.out.print("No se que poner aca :D");
             
         }
-        
     }
     
 }
