@@ -7,6 +7,9 @@ import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -17,7 +20,7 @@ import javax.swing.WindowConstants;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 
-public class ProcesosBloqueo extends JFrame implements ActionListener {
+public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener {
 
     JScrollPane scrollPane = new JScrollPane();
     JScrollPane scrollPane1 = new JScrollPane();
@@ -30,6 +33,7 @@ public class ProcesosBloqueo extends JFrame implements ActionListener {
     JLabel label1 = new JLabel("Nombre del proceso: ");
     JLabel label2 = new JLabel("Prioridad del proceso:");
     JLabel label3 = new JLabel("Proceso en ejecucion: Ninguno");
+    JLabel label4 = new JLabel("Tiempo: ");
     
     JButton botonIngresar = new JButton("Ingresar proceso");
     JButton botonIniciar = new JButton("Iniciar ejecucion");
@@ -37,13 +41,21 @@ public class ProcesosBloqueo extends JFrame implements ActionListener {
     
     JComboBox prioridad = new JComboBox();
     
-    public JTextField tfNombre = new JTextField("A");
+    JTextField tfNombre = new JTextField("a");
     
     JTextField[][] tabla = new JTextField[40][8];
     
-    int filas;
+    ListaCircular cola = new ListaCircular();
     
-    public static void main(String[] args) {
+    Nodo nodoEjecutado;
+    ArrayList <Nodo> historial = new ArrayList<>();
+    
+    int filas = 0, rafagaTemporal;
+    int tiempoGlobal = 0;
+    
+    Thread procesos;
+    
+    public static void main(String[] args) throws InterruptedException {
 
         ProcesosBloqueo pb = new ProcesosBloqueo(); 
         pb.setBounds(0, 0, 1200, 730);
@@ -62,6 +74,7 @@ public class ProcesosBloqueo extends JFrame implements ActionListener {
         c.add(label1);
         c.add(label2);
         c.add(label3);
+        c.add(label4);
         c.add(semaforo);
         
         c.add(scrollPane1);
@@ -84,6 +97,7 @@ public class ProcesosBloqueo extends JFrame implements ActionListener {
         label1.setBounds(800, 40, 300, 20);
         label2.setBounds(800, 70, 300, 20);
         label3.setBounds(800, 250, 300, 20);
+        label4.setBounds(1020, 250, 300, 20);
         
         scrollPane.setBounds(50, 40, 2500, 2500);
         scrollPane.setPreferredSize(new Dimension(2500, 2500));  
@@ -140,8 +154,8 @@ public class ProcesosBloqueo extends JFrame implements ActionListener {
         JLabel texto1 = new JLabel("Proceso");
         JLabel texto2 = new JLabel("T. llegada");
         JLabel texto3 = new JLabel("Rafaga");
-        JLabel texto4 = new JLabel("T. comienzo");
-        JLabel texto5 = new JLabel("Prioridad");
+        JLabel texto4 = new JLabel("Prioridad");
+        JLabel texto5 = new JLabel("T. comienzo");
         JLabel texto6 = new JLabel("T. final");
         JLabel texto7 = new JLabel("T. retorno");
         JLabel texto8 = new JLabel("T. espera");
@@ -165,21 +179,86 @@ public class ProcesosBloqueo extends JFrame implements ActionListener {
         scrollPane.add(texto8);
         
         for(int i = 0; i<filas; i++){
-        
+            
             for(int j = 0; j<8; j++){
             
-                tabla[i][j] = new JTextField("Ño");
-                tabla[i][j].setBounds(20 + (j*80), 40 + (i*25), 70, 20);
-                scrollPane.add(tabla[i][j]);
+                if(tabla[i][j] != null){
+                    
+                    scrollPane.add(tabla[i][j]);
+                    
+                } else {
                 
+                    tabla[i][j] = new JTextField("-");
+                    tabla[i][j].setBounds(20 + (j*80), 40 + (i*25), 70, 20);
+                    
+                    scrollPane.add(tabla[i][j]);
+                    
+                }
+
             }
+        
+        }
+        
+        tabla[filas-1][0].setText(tfNombre.getText());
+        tabla[filas-1][1].setText(Integer.toString(tiempoGlobal));
+        tabla[filas-1][2].setText(Integer.toString(rafagaTemporal));
+        tabla[filas-1][3].setText(String.valueOf(prioridad.getSelectedItem()));
+
+        scrollPane.repaint();
+        scrollPane1.setViewportView(scrollPane);
             
         }
         
-        scrollPane.repaint();
-        scrollPane1.setViewportView(scrollPane);
         
+    
+    public int calcularRafaga(){
         
+        return 1 + ((int) (Math.random()*7));
+        
+    }
+    
+    public void ordenarPrioridades(){
+        
+        int movimientos = 0;
+        int contador = 0;
+        
+        Nodo temp = cola.getCabeza().getSiguiente();
+        
+        int menorPrio = cola.getCabeza().getPrioridad();
+        
+        while(!(temp.equals(cola.getCabeza()))){
+    
+            contador++;
+            
+            if(temp.getPrioridad() < menorPrio){
+            
+                menorPrio = temp.getPrioridad();
+                movimientos = contador;
+                
+            }
+            
+            temp = temp.getSiguiente();
+            
+        }
+        
+        System.out.println("moves" + movimientos);
+        
+        for(int i = 0; i < movimientos; i++){
+            
+            cola.intercambiar(cola.getCabeza());
+            
+        }
+        
+    }
+    
+    public void ingresar(){
+        
+        String nombre = tfNombre.getText();
+        String p = String.valueOf(prioridad.getSelectedItem());
+        int prio = Integer.parseInt(p);
+        rafagaTemporal = calcularRafaga();
+        
+        cola.insertar(nombre, prio, rafagaTemporal, tiempoGlobal, filas);
         
     }
     
@@ -189,18 +268,72 @@ public class ProcesosBloqueo extends JFrame implements ActionListener {
         if(e.getSource() == botonIngresar){
             
             filas++;
-            
+            ingresar();
             dibujarTabla();
             
         } else if(e.getSource() == botonIniciar){
         
-            
+            procesos = new Thread( this );
+            procesos.start();  
             
         } else if(e.getSource() == botonBloquear){
         
             filas++;
-            
+            ingresar();
             dibujarTabla();
+            
+        }
+        
+    }
+    
+    @Override
+    public void run() {
+        
+        try{
+
+            while(cola.getTamaño() != 0){
+                
+                ordenarPrioridades();
+                
+                nodoEjecutado = cola.getCabeza();
+                historial.add(cola.getCabeza());
+                
+                cola.eliminar(cola.getCabeza());
+                
+                while(nodoEjecutado.getRafaga() > 0){
+
+                    System.out.println("Pro: " + nodoEjecutado.getLlave() + " - Raf: " + nodoEjecutado.getRafaga());
+                    
+                    nodoEjecutado.setRafaga(nodoEjecutado.getRafaga()-1);
+                    
+                    label3.setText("Proceso en ejecucion: " + nodoEjecutado.getLlave());
+                    label4.setText("Tiempo: " + String.valueOf(tiempoGlobal) + " Segundos.");
+                    
+                    tiempoGlobal++;
+                            
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(ProcesosBloqueo.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    
+                }
+                  
+                tiempoGlobal++;
+                
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(ProcesosBloqueo.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+            }
+            
+            
+
+        }catch(Exception e){
+        
+            System.out.print("No se que poner aca :D");
             
         }
         
