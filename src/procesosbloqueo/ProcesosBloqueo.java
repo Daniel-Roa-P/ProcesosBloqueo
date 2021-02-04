@@ -53,7 +53,7 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
     
     int filas = 0, rafagaTemporal;
     int tiempoGlobal = 0;
-    int coorX = 0, coorY = 0;
+    int coorX = 0, coorY = 1;
     
     Thread procesos;
     
@@ -149,7 +149,7 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
      
     }
     
-    public void dibujarTabla(){
+    public void dibujarTabla(String nombre, int prio, int rafaga, int tiempo){
         
         scrollPane.removeAll();
         
@@ -201,10 +201,10 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
         
         }
         
-        tabla[filas-1][0].setText(tfNombre.getText());
-        tabla[filas-1][1].setText(Integer.toString(tiempoGlobal));
-        tabla[filas-1][2].setText(Integer.toString(rafagaTemporal));
-        tabla[filas-1][3].setText(String.valueOf(prioridad.getSelectedItem()));
+        tabla[filas-1][0].setText(nombre);
+        tabla[filas-1][1].setText(Integer.toString(tiempo));
+        tabla[filas-1][2].setText(Integer.toString(rafaga));
+        tabla[filas-1][3].setText(String.valueOf(prio));
 
         scrollPane.repaint();
         scrollPane1.setViewportView(scrollPane);
@@ -263,7 +263,7 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
     
     public int calcularRafaga(){
         
-        return 1 + ((int) (Math.random()*7));
+        return 1 + ((int) (Math.random()*10));
         
     }
     
@@ -291,8 +291,6 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
             
         }
         
-        System.out.println("moves" + movimientos);
-        
         for(int i = 0; i < movimientos; i++){
             
             cola.intercambiar(cola.getCabeza());
@@ -301,14 +299,9 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
         
     }
     
-    public void ingresar(){
+    public void ingresar(String nombre, int prio, int rafaga, int tiempo, int filas){
         
-        String nombre = tfNombre.getText();
-        String p = String.valueOf(prioridad.getSelectedItem());
-        int prio = Integer.parseInt(p);
-        rafagaTemporal = calcularRafaga();
-        
-        cola.insertar(nombre, prio, rafagaTemporal, tiempoGlobal, filas);
+        cola.insertar(nombre, prio, rafaga, tiempo, filas);
         
     }
     
@@ -318,8 +311,14 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
         if(e.getSource() == botonIngresar){
             
             filas++;
-            ingresar();
-            dibujarTabla();
+            
+            String nombre = tfNombre.getText();
+            String p = String.valueOf(prioridad.getSelectedItem());
+            int prio = Integer.parseInt(p);
+            rafagaTemporal = calcularRafaga();
+            
+            ingresar(nombre, prio, rafagaTemporal, tiempoGlobal, filas);
+            dibujarTabla(nombre, prio, rafagaTemporal, tiempoGlobal);
             
         } else if(e.getSource() == botonIniciar){
         
@@ -329,8 +328,13 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
         } else if(e.getSource() == botonBloquear){
         
             filas++;
-            ingresar();
-            dibujarTabla();
+            procesos.suspend();
+            ingresar(nodoEjecutado.getLlave() + "*", 5, nodoEjecutado.getRafaga(), tiempoGlobal, filas);
+            dibujarTabla(nodoEjecutado.getLlave() + "*", 5, nodoEjecutado.getRafaga(), tiempoGlobal);
+            cola.eliminar(cola.getCabeza());
+            nodoEjecutado = cola.getCabeza();
+            coorY++;
+            procesos.resume();
             
         }
         
@@ -343,18 +347,14 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
 
             while(cola.getTamaño() != 0){
                 
+                dibujarSemaforo("Rojo.jpg");
+                
                 ordenarPrioridades();
                 
                 nodoEjecutado = cola.getCabeza();
                 historial.add(cola.getCabeza());
                 
-                cola.eliminar(cola.getCabeza());
-                
-                coorY++;
-                
                 while(nodoEjecutado.getRafaga() > 0){
-
-                    System.out.println("Pro: " + nodoEjecutado.getLlave() + " - Raf: " + nodoEjecutado.getRafaga());
                     
                     nodoEjecutado.setRafaga(nodoEjecutado.getRafaga()-1);
                     
@@ -382,8 +382,15 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
                     Logger.getLogger(ProcesosBloqueo.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 
+                cola.eliminar(cola.getCabeza());
+                
+                coorY++;
+                
             }
 
+            dibujarSemaforo("Verde.jpg");
+            label3.setText("Proceso en ejecucion: Ninguno");
+            
         } catch(Exception e){
         
             System.out.print("No se que poner aca :D");
