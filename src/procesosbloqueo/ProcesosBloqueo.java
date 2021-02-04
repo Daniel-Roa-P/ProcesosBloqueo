@@ -7,7 +7,6 @@ import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -49,7 +48,6 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
     ListaCircular cola = new ListaCircular();
     
     Nodo nodoEjecutado;
-    ArrayList <Nodo> historial = new ArrayList<>();
     
     int filas = 0, rafagaTemporal;
     int tiempoGlobal = 0;
@@ -210,7 +208,16 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
         scrollPane1.setViewportView(scrollPane);
             
     }
+    
+    public void llenarRestante(){
         
+        tabla[nodoEjecutado.getIndice()-1][4].setText(Integer.toString(nodoEjecutado.getComienzo()));
+        tabla[nodoEjecutado.getIndice()-1][5].setText(Integer.toString(nodoEjecutado.getFinalizacion()));
+        tabla[nodoEjecutado.getIndice()-1][6].setText(Integer.toString(nodoEjecutado.getFinalizacion() - nodoEjecutado.getLlegada()));
+        tabla[nodoEjecutado.getIndice()-1][7].setText(Integer.toString(nodoEjecutado.getComienzo() - nodoEjecutado.getLlegada()));
+ 
+    }
+    
     public void dibujarDiagrama(String nombre, int coorX, int coorY){
         
         scrollPane2.removeAll();
@@ -320,6 +327,7 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
             ingresar(nombre, prio, rafagaTemporal, tiempoGlobal, filas);
             dibujarTabla(nombre, prio, rafagaTemporal, tiempoGlobal);
             
+            
         } else if(e.getSource() == botonIniciar){
         
             procesos = new Thread( this );
@@ -331,9 +339,13 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
             procesos.suspend();
             ingresar(nodoEjecutado.getLlave() + "*", 5, nodoEjecutado.getRafaga(), tiempoGlobal, filas);
             dibujarTabla(nodoEjecutado.getLlave() + "*", 5, nodoEjecutado.getRafaga(), tiempoGlobal);
+            nodoEjecutado.setFinalizacion(tiempoGlobal);
+            llenarRestante();
             cola.eliminar(cola.getCabeza());
+            ordenarPrioridades();
             nodoEjecutado = cola.getCabeza();
             coorY++;
+            nodoEjecutado.setComienzo(tiempoGlobal);
             procesos.resume();
             
         }
@@ -352,7 +364,7 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
                 ordenarPrioridades();
                 
                 nodoEjecutado = cola.getCabeza();
-                historial.add(cola.getCabeza());
+                nodoEjecutado.setComienzo(tiempoGlobal);
                 
                 while(nodoEjecutado.getRafaga() > 0){
                     
@@ -373,15 +385,9 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
                     }
                     
                 }
-                  
-                tiempoGlobal++;
                 
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(ProcesosBloqueo.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                
+                nodoEjecutado.setFinalizacion(tiempoGlobal);
+                llenarRestante();
                 cola.eliminar(cola.getCabeza());
                 
                 coorY++;
@@ -395,7 +401,8 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
         
             System.out.print("No se que poner aca :D");
             
-        }
-    }
+        } 
+    
+    } 
     
 }
