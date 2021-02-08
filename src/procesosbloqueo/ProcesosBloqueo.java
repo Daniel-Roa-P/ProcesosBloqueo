@@ -36,6 +36,9 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
     JLabel label2 = new JLabel("Prioridad del proceso:");
     JLabel label3 = new JLabel("Proceso en ejecucion: Ninguno");
     JLabel label4 = new JLabel("Tiempo: ");
+    JLabel label5 = new JLabel("Tabla de procesos:");
+    JLabel label6 = new JLabel("Diagrama de Gant:");
+    JLabel label7 = new JLabel("Tabla de Bloqueados:");
     
     JButton botonIngresar = new JButton("Ingresar proceso");
     JButton botonIniciar = new JButton("Iniciar ejecucion");
@@ -79,6 +82,9 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
         c.add(label2);
         c.add(label3);
         c.add(label4);
+        c.add(label5);
+        c.add(label6);
+        c.add(label7);
         c.add(semaforo);
         
         c.add(scrollPane1);
@@ -103,6 +109,9 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
         label2.setBounds(800, 70, 300, 20);
         label3.setBounds(800, 250, 300, 20);
         label4.setBounds(1020, 250, 300, 20);
+        label5.setBounds(50, 20, 300, 20);
+        label6.setBounds(50, 280, 300, 20);
+        label7.setBounds(800, 280, 300, 20);
         
         scrollPane.setBounds(50, 40, 2500, 2500);
         scrollPane.setPreferredSize(new Dimension(2500, 2500));  
@@ -410,7 +419,6 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
             if(nodoEjecutado.getRafaga() != 0){
             
                 filas++;
-                procesos.suspend();
                 ingresar(nodoEjecutado.getLlave() + "*", 5, nodoEjecutado.getRafaga(), tiempoGlobal, filas);
                 dibujarTabla(nodoEjecutado.getLlave() + "*", 5, nodoEjecutado.getRafaga(), tiempoGlobal);
                 nodoEjecutado.setFinalizacion(tiempoGlobal);
@@ -421,7 +429,6 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
                 nodoEjecutado = cola.getCabeza();
                 coorY++;
                 nodoEjecutado.setComienzo(tiempoGlobal);
-                procesos.resume();
         
             }
         }
