@@ -27,6 +27,9 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
     JScrollPane scrollPane2 = new JScrollPane();
     JScrollPane scrollPane3 = new JScrollPane();
     
+    JScrollPane scrollPane4 = new JScrollPane();
+    JScrollPane scrollPane5 = new JScrollPane();
+    
     JLabel semaforo = new JLabel();
     
     JLabel label1 = new JLabel("Nombre del proceso: ");
@@ -40,10 +43,11 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
     
     JComboBox prioridad = new JComboBox();
     
-    JTextField tfNombre = new JTextField("a");
+    JTextField tfNombre = new JTextField("P1");
     
-    JTextField[][] tabla = new JTextField[40][8];
-    JLabel[][] diagrama = new JLabel[41][101];
+    JTextField[][] tabla = new JTextField[100][8];
+    JTextField[][] tablaBloqueados = new JTextField[100][4];
+    JLabel[][] diagrama = new JLabel[40][100];  
     
     ListaCircular cola = new ListaCircular();
     
@@ -79,6 +83,7 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
         
         c.add(scrollPane1);
         c.add(scrollPane3);
+        c.add(scrollPane5);
         
         c.add(botonIngresar);
         c.add(botonIniciar);
@@ -111,9 +116,25 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
         scrollPane2.setPreferredSize(new Dimension(2500, 2500));  
         scrollPane2.setBackground(Color.lightGray);
         
-        scrollPane3.setBounds(50, 300, 1100, 350);
+        scrollPane3.setBounds(50, 300, 700, 350);
         scrollPane3.setPreferredSize(new Dimension(1150, 400)); 
         scrollPane3.setBackground(Color.lightGray);
+        
+        scrollPane2.setBounds(50, 300, 2500, 2500);
+        scrollPane2.setPreferredSize(new Dimension(2500, 2500));  
+        scrollPane2.setBackground(Color.lightGray);
+        
+        scrollPane3.setBounds(50, 300, 700, 350);
+        scrollPane3.setPreferredSize(new Dimension(700, 350)); 
+        scrollPane3.setBackground(Color.lightGray);
+        
+        scrollPane4.setBounds(800, 300, 500, 1000);
+        scrollPane4.setPreferredSize(new Dimension(500, 1000));  
+        scrollPane4.setBackground(Color.lightGray);
+        
+        scrollPane5.setBounds(800, 300, 350, 350);
+        scrollPane5.setPreferredSize(new Dimension(350, 350)); 
+        scrollPane5.setBackground(Color.lightGray);
         
         prioridad.setBounds(930, 70, 70, 20);
         tfNombre.setBounds(930, 40, 70, 20);
@@ -209,6 +230,56 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
             
     }
     
+    public void llenarBloqueados(){
+        
+        scrollPane4.removeAll();
+        
+        JLabel texto1 = new JLabel("Proceso");
+        JLabel texto2 = new JLabel("T. llegada");
+        JLabel texto3 = new JLabel("Rafaga");
+        JLabel texto4 = new JLabel("Prioridad");
+        
+        texto1.setBounds(20, 20, 150, 20);
+        texto2.setBounds(100, 20, 150, 20);
+        texto3.setBounds(180, 20, 150, 20);
+        texto4.setBounds(260, 20, 150, 20);
+        
+        scrollPane4.add(texto1);
+        scrollPane4.add(texto2);
+        scrollPane4.add(texto3);
+        scrollPane4.add(texto4);
+        
+        if(cola.getCabeza() != null){
+        
+        Nodo temp = cola.getCabeza().getSiguiente();
+        
+            for(int i = 0; i<cola.getTamaño()-1; i++){
+
+                for(int j = 0; j<4; j++){
+
+                        tablaBloqueados[i][j] = new JTextField("");
+                        tablaBloqueados[i][j].setBounds(20 + (j*80), 40 + (i*25), 70, 20);
+
+                        scrollPane4.add(tablaBloqueados[i][j]);
+
+                }
+
+                tablaBloqueados[i][0].setText(temp.getLlave());
+                tablaBloqueados[i][1].setText(Integer.toString(temp.getLlegada()));
+                tablaBloqueados[i][2].setText(Integer.toString(temp.getRafaga()));
+                tablaBloqueados[i][3].setText(Integer.toString(temp.getPrioridad()));
+                
+                temp = temp.getSiguiente();
+
+            }
+        
+        }
+        
+        scrollPane4.repaint();
+        scrollPane5.setViewportView(scrollPane4);
+        
+    }
+    
     public void llenarRestante(){
         
         tabla[nodoEjecutado.getIndice()-1][4].setText(Integer.toString(nodoEjecutado.getComienzo()));
@@ -222,7 +293,7 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
         
         scrollPane2.removeAll();
         
-        for(int i = 0; i<101; i++){
+        for(int i = 0; i<100; i++){
             
             diagrama[0][i] = new JLabel(Integer.toString(i));
             diagrama[0][i].setBounds(20 + (i*20), 20, 20, 20);
@@ -232,7 +303,7 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
         }
         
         diagrama[coorY][0] = new JLabel("  " + nombre);
-        diagrama[coorY][0].setBounds(0, 20 + (coorY*20), 20, 20);
+        diagrama[coorY][0].setBounds(0, 20 + (coorY*20), 30, 20);
         
         scrollPane2.add(diagrama[coorY][0]);
         
@@ -270,7 +341,7 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
     
     public int calcularRafaga(){
         
-        return 1 + ((int) (Math.random()*10));
+        return 1 + ((int) (Math.random()*8));
         
     }
     
@@ -327,6 +398,7 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
             ingresar(nombre, prio, rafagaTemporal, tiempoGlobal, filas);
             dibujarTabla(nombre, prio, rafagaTemporal, tiempoGlobal);
             
+            tfNombre.setText("P" + (filas + 1));
             
         } else if(e.getSource() == botonIniciar){
         
@@ -335,19 +407,23 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
             
         } else if(e.getSource() == botonBloquear){
         
-            filas++;
-            procesos.suspend();
-            ingresar(nodoEjecutado.getLlave() + "*", 5, nodoEjecutado.getRafaga(), tiempoGlobal, filas);
-            dibujarTabla(nodoEjecutado.getLlave() + "*", 5, nodoEjecutado.getRafaga(), tiempoGlobal);
-            nodoEjecutado.setFinalizacion(tiempoGlobal);
-            llenarRestante();
-            cola.eliminar(cola.getCabeza());
-            ordenarPrioridades();
-            nodoEjecutado = cola.getCabeza();
-            coorY++;
-            nodoEjecutado.setComienzo(tiempoGlobal);
-            procesos.resume();
+            if(nodoEjecutado.getRafaga() != 0){
             
+                filas++;
+                procesos.suspend();
+                ingresar(nodoEjecutado.getLlave() + "*", 5, nodoEjecutado.getRafaga(), tiempoGlobal, filas);
+                dibujarTabla(nodoEjecutado.getLlave() + "*", 5, nodoEjecutado.getRafaga(), tiempoGlobal);
+                nodoEjecutado.setFinalizacion(tiempoGlobal);
+                llenarRestante();
+                cola.eliminar(cola.getCabeza());
+                ordenarPrioridades();
+                llenarBloqueados();
+                nodoEjecutado = cola.getCabeza();
+                coorY++;
+                nodoEjecutado.setComienzo(tiempoGlobal);
+                procesos.resume();
+        
+            }
         }
         
     }
@@ -374,6 +450,7 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
                     label4.setText("Tiempo: " + String.valueOf(tiempoGlobal) + " Segundos.");
                     
                     dibujarDiagrama(nodoEjecutado.getLlave(), coorX, coorY);
+                    llenarBloqueados();
                     
                     tiempoGlobal++;
                     coorX++;
@@ -389,7 +466,7 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
                 nodoEjecutado.setFinalizacion(tiempoGlobal);
                 llenarRestante();
                 cola.eliminar(cola.getCabeza());
-                
+                llenarBloqueados();
                 coorY++;
                 
             }
@@ -401,7 +478,7 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
         
             System.out.print("No se que poner aca :D");
             
-        } 
+        }  
     
     } 
     
