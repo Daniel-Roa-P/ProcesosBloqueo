@@ -39,6 +39,7 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
     JLabel label5 = new JLabel("Tabla de procesos:");
     JLabel label6 = new JLabel("Diagrama de Gant:");
     JLabel label7 = new JLabel("Tabla de Bloqueados:");
+    JLabel label8 = new JLabel("Rafaga restante del proceso: 0");
     
     JButton botonIngresar = new JButton("Ingresar proceso");
     JButton botonIniciar = new JButton("Iniciar ejecucion");
@@ -85,6 +86,7 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
         c.add(label5);
         c.add(label6);
         c.add(label7);
+        c.add(label8);
         c.add(semaforo);
         
         c.add(scrollPane1);
@@ -112,38 +114,39 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
         label5.setBounds(50, 20, 300, 20);
         label6.setBounds(50, 280, 300, 20);
         label7.setBounds(800, 280, 300, 20);
+        label8.setBounds(800, 265, 300, 20);
         
         scrollPane.setBounds(50, 40, 2500, 2500);
         scrollPane.setPreferredSize(new Dimension(2500, 2500));  
-        scrollPane.setBackground(Color.lightGray);
+        scrollPane.setBackground(Color.WHITE);
         
         scrollPane1.setBounds(50, 40, 700, 230);
         scrollPane1.setPreferredSize(new Dimension(1150, 400)); 
-        scrollPane1.setBackground(Color.lightGray);
+        scrollPane1.setBackground(Color.WHITE);
         
         scrollPane2.setBounds(50, 300, 2500, 2500);
         scrollPane2.setPreferredSize(new Dimension(2500, 2500));  
-        scrollPane2.setBackground(Color.lightGray);
+        scrollPane2.setBackground(Color.WHITE);
         
         scrollPane3.setBounds(50, 300, 700, 350);
         scrollPane3.setPreferredSize(new Dimension(1150, 400)); 
-        scrollPane3.setBackground(Color.lightGray);
+        scrollPane3.setBackground(Color.WHITE);
         
         scrollPane2.setBounds(50, 300, 2500, 2500);
         scrollPane2.setPreferredSize(new Dimension(2500, 2500));  
-        scrollPane2.setBackground(Color.lightGray);
+        scrollPane2.setBackground(Color.WHITE);
         
         scrollPane3.setBounds(50, 300, 700, 350);
         scrollPane3.setPreferredSize(new Dimension(700, 350)); 
-        scrollPane3.setBackground(Color.lightGray);
+        scrollPane3.setBackground(Color.WHITE);
         
         scrollPane4.setBounds(800, 300, 500, 1000);
         scrollPane4.setPreferredSize(new Dimension(500, 1000));  
-        scrollPane4.setBackground(Color.lightGray);
+        scrollPane4.setBackground(Color.WHITE);
         
         scrollPane5.setBounds(800, 300, 350, 350);
         scrollPane5.setPreferredSize(new Dimension(350, 350)); 
-        scrollPane5.setBackground(Color.lightGray);
+        scrollPane5.setBackground(Color.WHITE);
         
         prioridad.setBounds(930, 70, 70, 20);
         tfNombre.setBounds(930, 40, 70, 20);
@@ -298,6 +301,27 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
  
     }
     
+    public void dibujarEsperas(){
+        
+        JLabel img2 = new JLabel();
+        
+        ImageIcon imgIcon2 = new ImageIcon(getClass().getResource("barraEspera.png"));
+
+        Image imgEscalada2 = imgIcon2.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
+        Icon iconoEscalado2 = new ImageIcon(imgEscalada2);
+        
+        for(int i = coorX-1; i >= nodoEjecutado.getLlegada(); i--){
+        
+            diagrama[coorY][i+1] = new JLabel();
+            diagrama[coorY][i+1].setBounds(40 + (i*20), 20 + (coorY*20), 20, 20);
+            diagrama[coorY][i+1].setIcon(iconoEscalado2);
+            
+            scrollPane2.add(diagrama[coorY][i+1]);
+            
+        }
+        
+    }
+    
     public void dibujarDiagrama(String nombre, int coorX, int coorY){
         
         scrollPane2.removeAll();
@@ -305,20 +329,20 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
         for(int i = 0; i<100; i++){
             
             diagrama[0][i] = new JLabel(Integer.toString(i));
-            diagrama[0][i].setBounds(20 + (i*20), 20, 20, 20);
+            diagrama[0][i].setBounds(40 + (i*20), 20, 20, 20);
 
             scrollPane2.add(diagrama[0][i]);
             
         }
         
         diagrama[coorY][0] = new JLabel("  " + nombre);
-        diagrama[coorY][0].setBounds(0, 20 + (coorY*20), 30, 20);
+        diagrama[coorY][0].setBounds(0, 20 + (coorY*20), 50, 20);
         
         scrollPane2.add(diagrama[coorY][0]);
         
         JLabel img = new JLabel();
         
-        ImageIcon imgIcon = new ImageIcon(getClass().getResource("barra.jpg"));
+        ImageIcon imgIcon = new ImageIcon(getClass().getResource("barra.png"));
 
         Image imgEscalada = imgIcon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
         Icon iconoEscalado = new ImageIcon(imgEscalada);
@@ -338,7 +362,7 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
         }
         
         diagrama[coorY][coorX+1] = new JLabel();
-        diagrama[coorY][coorX+1].setBounds(20 + (coorX*20), 20 + (coorY*20), 20, 20);
+        diagrama[coorY][coorX+1].setBounds(40 + (coorX*20), 20 + (coorY*20), 20, 20);
         diagrama[coorY][coorX+1].setIcon(iconoEscalado);
         
         scrollPane2.add(diagrama[coorY][coorX+1]);
@@ -429,7 +453,7 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
                 nodoEjecutado = cola.getCabeza();
                 coorY++;
                 nodoEjecutado.setComienzo(tiempoGlobal);
-        
+                dibujarEsperas();
             }
         }
         
@@ -449,12 +473,15 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
                 nodoEjecutado = cola.getCabeza();
                 nodoEjecutado.setComienzo(tiempoGlobal);
                 
+                dibujarEsperas();
+                
                 while(nodoEjecutado.getRafaga() > 0){
                     
                     nodoEjecutado.setRafaga(nodoEjecutado.getRafaga()-1);
                     
                     label3.setText("Proceso en ejecucion: " + nodoEjecutado.getLlave());
                     label4.setText("Tiempo: " + String.valueOf(tiempoGlobal) + " Segundos.");
+                    label8.setText("Rafaga restante del proceso: " + nodoEjecutado.getRafaga());
                     
                     dibujarDiagrama(nodoEjecutado.getLlave(), coorX, coorY);
                     llenarBloqueados();
@@ -485,7 +512,7 @@ public class ProcesosBloqueo extends JFrame implements Runnable ,ActionListener 
         
             System.out.print("No se que poner aca :D");
             
-        }  
+        } 
     
     } 
     

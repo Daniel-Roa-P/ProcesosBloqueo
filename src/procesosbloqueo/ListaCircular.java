@@ -41,36 +41,6 @@ public class ListaCircular {
         
     }
     
-    public String imprimir(){
-    
-        cadenaLista = "";
-        
-        Nodo q = cabeza;
-        
-        while(true){
-        
-            cadenaLista = cadenaLista + q.getLlave() + " tareas: " + q.getTareas() + ",";
-            
-            q = q.getSiguiente();
-            
-            if(q == ultimo){
-                
-                if(!q.equals(cabeza)){
-                
-                    cadenaLista = cadenaLista + q.getLlave() + " tareas: " + q.getTareas() + ",";
-                    
-                }
-
-                break;
-                
-            }
-            
-        }  
-        
-        return cadenaLista;
-        
-    }
-    
     public void eliminar(Nodo nodoAtendido){
         
         Nodo actual = nodoAtendido;

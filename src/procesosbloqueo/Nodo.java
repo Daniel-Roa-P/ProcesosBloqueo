@@ -40,14 +40,6 @@ public class Nodo {
         this.llave = llave;
     }
 
-    public int getTareas() {
-        return prioridad;
-    }
-
-    public void setTareas(int tareas) {
-        this.prioridad = tareas;
-    }
-
     public int getPrioridad() {
         return prioridad;
     }
@@ -103,7 +95,5 @@ public class Nodo {
     public void setIndice(int indice) {
         this.indice = indice;
     }
-    
-    
-    
+  
 }
